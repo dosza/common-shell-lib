@@ -222,6 +222,38 @@ testCheckMinDeps(){
 }
 
 
+testConfigureSignedSourcesList(){
+    mkdir -p $FAKE_ROOT_TEST_DIR/apt/sources.list.d
+    apt-get(){
+        :
+    }
+
+    install(){
+        :
+    }
+
+    local mirrors=(   
+        "[arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
+        "[signed-by=/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"
+    )
+
+    local keys=(
+        'https://packages.microsoft.com/keys/microsoft.asc'
+        'https://mega.nz/linux/repo/xUbuntu_22.04/Release.key'
+    )
+
+    local repo_path=(
+        $FAKE_ROOT_TEST_DIR/apt/sources.list.d/vscode.list
+        $FAKE_ROOT_TEST_DIR/apt/sources.list.d/megasync.list
+    )
+
+    configureSignedSourcesList  keys mirrors repo_path
+    assertTrue "[Configuring Apt mirror with success]" $?
+
+    configureSignedSourcesList 
+    assertFalse "[Configuring Apt mirror, but missing args]" $?
+}
+
 forEach APT_LOCKS lock 'lock="${FAKE_ROOT_TEST_DIR}${lock}"
     mkdir -p "$(dirname $lock)"'
 . $(which shunit2)

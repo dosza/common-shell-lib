@@ -2,8 +2,8 @@
 #-------------------------------------------------------------------------------------------------#
 #Universidade federal de Mato Grosso (mater-alma)
 #Course: Science Computer
-#version: 0.3.2
-#Date: 26/07/2022
+#version: 0.3.3
+#Date: 24/05/2024
 #Description: Thi script provides common shell functions
 #-------------------------------------------------------------------------------------------------#
 
@@ -48,6 +48,11 @@
 #	Run arrayMap without index faster
 #	Change loop syntax to protected mode, replace * with @		
 #	Run arrayFilter faster after removing unnecessary function call and commands
+#v0.3.3
+#	add configureSignedSourcesList
+#	This function configures repositories using the new APT signing method.
+#	The array with the mirrors must not start with deb, as a parse is executed
+
 
 #GLOBAL VARIABLES
 #----ColorTerm
@@ -984,11 +989,126 @@ getAptKeys(){
 # $2 is reference to array to apt sources.list paths,
 # $3 is reference to array mirros, 
 
+
 ConfigureSourcesList(){
 	if [ $# -lt 3 ]; then return 1; fi
 	CheckMinDeps
 	getAptKeys $1
 	writeAptMirrors $2 $3
+}
+
+writeSignedMirrors(){
+	
+	if !( isVariableArray $1 && isVariableArray $2); then 
+		returnFalse
+	fi
+
+
+	newPtr ref_file_mirros=$2
+	
+	isArchRegex(){
+		if [[ "$text" =~  $arch_regex ]];then 
+			has_arch=0
+			arch_type="$text"
+			return 0;
+		fi
+			return 1
+	}
+
+	parseMirror(){
+		local mirror_array=( $( echo "$mirror"  | sed "s/\[//g;s/\]//g"))
+		arrayFilter mirror_array text  final_mirror ' ! isArchRegex '
+	}
+
+	setMirror(){
+		local url_mirror_str="${final_mirror[@]:1}"
+		if [ $has_arch = 0 ]; then
+			
+			local new_mirror="deb [$arch_type signed-by=$signed_key] $url_mirror_str"
+		else 
+			local new_mirror="deb [signed-by=$signed_key] $url_mirror_str"
+		fi
+		mirror="$new_mirror"
+
+	}
+
+	echo 'Writing signed Mirrors'
+
+	arrayMap $1 mirror index '{
+		local has_arch=1
+		local arch_regex="(arch=)"
+		local arch_type=""
+		local final_mirror=()
+		local file_mirror=${ref_file_mirros[$index]}
+		local signed_key="${final_keys[$index]}"
+		parseMirror
+		setMirror
+		local mirror_str=(
+			"### THIS FILE IS AUTOMATICALLY CONFIGURED"
+			"###ou may comment out this entry, but any other modifications may be lost." 
+			"$mirror" 
+		)
+		WriterFileln $file_mirror mirror_str
+	}'
+
+	unset parseMirror setMirror isArchRegex
+}
+
+getNewAptKeys(){
+	if [ $# -lt 1 ] || [ "$1" = "" ] ; then return 1; fi
+
+	! isVariableArray $1 && returnFalse
+	
+	arrayMap $1 key index '{
+		echo $key
+		local final_key=${final_keys[$index]}
+		local new_key="$(basename $final_key)"
+		wget -qO- "$key" | gpg --dearmor > $new_key
+		install -D -o root -g root -m 644 $new_key $final_key
+		rm $new_key
+	}'
+
+}
+
+
+	
+setSignedKeysList(){
+
+	setKeyPath(){
+		local keys_stream=($key)
+		local keys_clean=()
+		local signed_key_regex='(signed\-by=)'
+		
+		arrayFilter keys_stream current_key keys_clean ' 
+			[[ $current_key =~ $signed_key_regex ]]'
+		
+		final_key="$(
+			echo "${keys_clean[*]}" |
+			sed 's/signed-by=//g;s/\[//g;s/\]//g'
+		)"
+
+
+	}
+	arrayMap $1 key '{
+		setKeyPath
+		final_keys+=("$final_key")
+	}'
+
+	unset setKeyPath
+}
+
+# Like ConfigureSourcesList but add new APT signature file
+#	Note $1 is the mirror array and must follow the syntax:
+#	mirrors=("[signed-by=path] https://...")
+#	or:
+#   mirrors=("[arch=value signed-by=path] https://...")
+
+configureSignedSourcesList(){
+	local final_keys=()
+	setSignedKeysList $2
+	CheckMinDeps
+	getNewAptKeys $1
+	writeSignedMirrors $2 $3
 }
 
 # Check if the minimum common-shell-lib dependencies are installed
