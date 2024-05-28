@@ -1003,8 +1003,7 @@ getNewAptKeys(){
 	! isVariableArray $1 && returnFalse
 	
 	arrayMap $1 key index '{
-		echo $key
-		local final_key=${final_keys[$index]}
+		local final_key=${target_apt_keys[$index]}
 		local new_key="$(basename $final_key)"
 		wget -qO- "$key" | gpg --dearmor > $new_key
 		install -D -o root -g root -m 644 $new_key $final_key
@@ -1014,30 +1013,24 @@ getNewAptKeys(){
 }
 
 
-	
+trimTargetKey(){
+	local signed_regex='(signed\-by=)'
+	for param in ${key}; do
+		if [[ "$param" =~ $signed_regex ]]; then
+			trim_key="$(
+				echo "${param}" |sed 's/signed-by=//g;s/\[//g;s/\]//g')"
+			return
+		fi
+	done
+}	
+
 setSignedKeysList(){
-
-	setKeyPath(){
-		local keys_stream=($key)
-		local keys_clean=()
-		local signed_key_regex='(signed\-by=)'
-		
-		arrayFilter keys_stream current_key keys_clean ' 
-			[[ $current_key =~ $signed_key_regex ]]'
-		
-		final_key="$(
-			echo "${keys_clean[*]}" |
-			sed 's/signed-by=//g;s/\[//g;s/\]//g'
-		)"
-
-
-	}
+	local trim_key
 	arrayMap $1 key '{
-		setKeyPath
-		final_keys+=("$final_key")
+		trimTargetKey
+		target_apt_keys+=("$trim_key")
 	}'
 
-	unset setKeyPath
 }
 
 # Like ConfigureSourcesList but add new APT signature file
@@ -1047,7 +1040,7 @@ setSignedKeysList(){
 #   mirrors=("[arch=value signed-by=path] https://...")
 
 configureSignedSourcesList(){
-	local final_keys=()
+	local target_apt_keys=()
 	setSignedKeysList $2
 	CheckMinDeps
 	getNewAptKeys $1
