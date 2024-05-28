@@ -1011,9 +1011,9 @@ FilterNewSignatureAptArrays(){
 }
 
 FilterLegacyAptArray(){
-	arrayFilter $1 	current_mirror index _signed_keys _mirrors ' ! isSignedRepoIndex'
-	arrayFilter $2  current_key  index _signed_keys  _keys '! isSignedRepoIndex'
-	arrayFilter $3  curent_repo_path index _signed_keys _repo_path '! isSignedRepoIndex'
+	arrayFilter $1 	current_mirror index _signed_keys legacy_mirrors ' ! isSignedRepoIndex'
+	arrayFilter $2  current_key  index _signed_keys  legacy_keys '! isSignedRepoIndex'
+	arrayFilter $3  curent_repo_path index _signed_keys legacy_repo_path '! isSignedRepoIndex'
 
 }
 
@@ -1024,16 +1024,16 @@ ConfigureSourcesList(){
 	local _signed_mirrors=()
 	local _signed_keys=()
 	local _signed_repo_path=()
-	local _mirrors=()
-	local _keys=()
-	local _repo_path=()
+	local legacy_mirrors=()
+	local legacy_keys=()
+	local legacy_repo_path=()
 
 	SetSignedKeysIndex
 	FilterNewSignatureAptArrays $1 $2 $3
 	FilterLegacyAptArray $1 $2 $3
 	CheckMinDeps
-	getAptKeys _keys
-	writeAptMirrors _mirrors _repo_path
+	getAptKeys legacy_keys
+	writeAptMirrors legacy_mirrors legacy_repo_path
 	configureSignedSourcesList _signed_keys _signed_mirrors _signed_repo_path
 }
 
