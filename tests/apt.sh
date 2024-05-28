@@ -149,10 +149,31 @@ testConfigureSourcesList(){
         "https://packages.microsoft.com/keys/microsoft.asc")
 
     ConfigureSourcesList apt_key_url_repository mirrors repositorys
-    assertTrue "[Configuring Apt mirror with success]" $?
+    assertTrue "[Configuring Apt legacy mirror with success]" $?
 
     ConfigureSourcesList
-    assertFalse "[Configuring Apt mirror, but missing args]" $?
+    assertFalse "[Configuring Apt legacy mirror, but missing args]" $?
+
+    mirrors+=(
+        "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
+        "deb [signed-by=/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"
+    )
+    
+    repositorys+=(
+        $FAKE_ROOT_TEST_DIR/apt/sources.list.d/vscode.list
+        $FAKE_ROOT_TEST_DIR/apt/sources.list.d/megasync.list
+    )
+
+    apt_key_url_repository+=(
+        'https://packages.microsoft.com/keys/microsoft.asc'
+        'https://mega.nz/linux/repo/xUbuntu_22.04/Release.key'
+    )
+
+    ConfigureSourcesList apt_key_url_repository mirrors repositorys
+    assertTrue "[Configuring New Apt mirror with success]" $?
+
+    ConfigureSourcesList
+    assertFalse "[Configuring New APTmirror, but missing args]" $?
 }
 
 testConfigureSourcesListByScript(){

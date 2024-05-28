@@ -991,11 +991,50 @@ getAptKeys(){
 # $3 is reference to array mirros, 
 
 
+
+SetSignedKeysIndex(){
+
+	local signed_regex='(signed\-by=)'
+	arrayMap $1 repo index   '{
+		if [[ "$repo" =~ $signed_regex ]]; then
+			signed_keys_index[$index]=1
+		fi
+	}'
+}
+isSignedRepoIndex(){
+	[ ${signed_keys_index[$index]} = 1 ]
+}
+FilterNewSignatureAptArrays(){
+	arrayFilter $1 	current_mirror index _signed_keys _signed_mirrors 'isSignedRepoIndex'
+	arrayFilter $2  current_key  index _signed_keys  _signed_keys 'isSignedRepoIndex'
+	arrayFilter $3  curent_repo_path index _signed_keys _signed_repo_path 'isSignedRepoIndex'
+}
+
+FilterLegacyAptArray(){
+	arrayFilter $1 	current_mirror index _signed_keys _mirrors ' ! isSignedRepoIndex'
+	arrayFilter $2  current_key  index _signed_keys  _keys '! isSignedRepoIndex'
+	arrayFilter $3  curent_repo_path index _signed_keys _repo_path '! isSignedRepoIndex'
+
+}
+
 ConfigureSourcesList(){
-	if [ $# -lt 3 ]; then return 1; fi
+	[ $# -lt 3 ] && returnFalse
+	
+	local signed_keys_index=()
+	local _signed_mirrors=()
+	local _signed_keys=()
+	local _signed_repo_path=()
+	local _mirrors=()
+	local _keys=()
+	local _repo_path=()
+
+	SetSignedKeysIndex
+	FilterNewSignatureAptArrays $1 $2 $3
+	FilterLegacyAptArray $1 $2 $3
 	CheckMinDeps
-	getAptKeys $1
-	writeAptMirrors $2 $3
+	getAptKeys _keys
+	writeAptMirrors _mirrors _repo_path
+	configureSignedSourcesList _signed_keys _signed_mirrors _signed_repo_path
 }
 
 getNewAptKeys(){
