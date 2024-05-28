@@ -49,9 +49,10 @@
 #	Change loop syntax to protected mode, replace * with @		
 #	Run arrayFilter faster after removing unnecessary function call and commands
 #v0.3.3
-#	add configureSignedSourcesList
-#	This function configures repositories using the new APT signing method.
-#	The array with the mirrors must not start with deb, as a parse is executed
+#	add configureSignedSourcesList :configures repositories using the new APT signing method.
+#	add getNewAptKeys: add keys repositories from new APT signature
+
+#d
 
 
 #GLOBAL VARIABLES
