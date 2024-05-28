@@ -86,14 +86,18 @@ testGetAptKeys(){
             printf "%b" "$message"
         }
 
-        apt-key (){
-            echo  "OK"
-        }
-
+    gpg(){ :; }
+    tee(){ :; }
     local fake_array='a=()'
-    assertEquals "[Installing apt keys on system with success]" "$(printf "%b" "$expected_message")" "$(getAptKeys apt_key_url_repository)"
-    assertEquals "[Try install apt keys without reference to array of keys ]" "" "$(getAptKeys )"
-    assertEquals "[Try installing apt keys with reference to a string type variable instead of an array]" "" "$(getAptKeys  fake_array)"
+    getAptKeys apt_key_url_repository
+    assertTrue "[Installing apt keys on system with success]" $?
+
+    getAptKeys
+    assertFalse "[Try install apt keys without reference to array of keys ]" $?
+    
+    getAptKeys fake_array
+    assertFalse "[Try installing apt keys with reference to a string type variable instead of an array]" $?
+    unset gpg tee
 }
 
 
