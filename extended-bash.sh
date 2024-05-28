@@ -1034,10 +1034,6 @@ setSignedKeysList(){
 }
 
 # Like ConfigureSourcesList but add new APT signature file
-#	Note $1 is the mirror array and must follow the syntax:
-#	mirrors=("[signed-by=path] https://...")
-#	or:
-#   mirrors=("[arch=value signed-by=path] https://...")
 
 configureSignedSourcesList(){
 	local target_apt_keys=()
