@@ -188,7 +188,7 @@ five_times_table=({0..10})
 source ./extended-bash.sh
 
 #example: configure google chrome, sublime text and microsoft teams repository!
-repositorys=(
+repositories=(
 	"/etc/apt/sources.list.d/google-chrome.list"
 	"/etc/apt/sources.list.d/sublime-text.list"
 	"/etc/apt/sources.list.d/geogebra.list"
@@ -200,13 +200,13 @@ mirrors=(
 	'deb http://www.geogebra.net/linux/ stable main'   
 	"deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main")
 
-apt_key_url_repository=(
+apt_key_url_repositories=(
 	"https://dl-ssl.google.com/linux/linux_signing_key.pub"
 	"https://static.geogebra.org/linux/office@geogebra.org.gpg.key"
 	"https://packages.microsoft.com/keys/microsoft.asc")
 
 # Note: requires admin
-ConfigureSourcesList apt_key_url_repository mirrors repositorys
+ConfigureSourcesList apt_key_url_repositories mirrors repositories
 ```
 
 ### sample: setting repository by url script download
