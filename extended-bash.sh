@@ -1027,14 +1027,17 @@ ConfigureSourcesList(){
 	local legacy_mirrors=()
 	local legacy_keys=()
 	local legacy_repo_path=()
-
+	local target_apt_keys=()
+	
 	SetSignedKeysIndex
 	FilterNewSignatureAptArrays $1 $2 $3
 	FilterLegacyAptArray $1 $2 $3
 	CheckMinDeps
+	setSignedKeysList _signed_mirrors
 	getAptKeys legacy_keys
+	getNewAptKeys _signed_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
-	configureSignedSourcesList _signed_keys _signed_mirrors _signed_repo_path
+	writeAptMirrors _signed_mirrors _signed_repo_path
 }
 
 getNewAptKeys(){
@@ -1073,15 +1076,6 @@ setSignedKeysList(){
 
 }
 
-# Like ConfigureSourcesList but add new APT signature file
-
-configureSignedSourcesList(){
-	local target_apt_keys=()
-	setSignedKeysList $2
-	CheckMinDeps
-	getNewAptKeys $1
-	writeAptMirrors $2 $3
-}
 
 # Check if the minimum common-shell-lib dependencies are installed
 # If not, they are installed
