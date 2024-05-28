@@ -268,7 +268,7 @@ arrayMap(){
 
 		4)
 
-			eval "for $3 in \${!refMap[*]}
+			eval "for $3 in \"\${!refMap[@]}\"
 			do
 				$2=\${refMap[\$$3]}
 				$4
