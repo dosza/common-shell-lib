@@ -323,7 +323,7 @@ arrayFilter(){
 					fi
 				done"
 			else 
-				eval "for _filterIdx in \${!refArray[@]}; do
+				eval "for _filterIdx in \"\${!refArray[@]}\"; do
 					$2=\${refArray[\$_filterIdx]}
 					if $4; then
 						refFilter[\$_filterIdx]=\"\$$2\"
@@ -352,7 +352,7 @@ arrayFilter(){
 					fi
 				done"
 			else 
-				eval "for $3 in \${!refArray[@]}; do 
+				eval "for $3 in \"\${!refArray[@]}\"; do 
 					$2=\${refArray[\$$3]}
 					if $5; then 
 						refFilter[\$$3]=\"\$$2\"
