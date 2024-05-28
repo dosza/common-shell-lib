@@ -1014,13 +1014,13 @@ isSignedRepoIndex(){
 FilterNewSignatureAptArrays(){
 	arrayFilter $1 	current_mirror index _signed_keys _signed_mirrors 'isSignedRepoIndex'
 	arrayFilter $2  current_key  index _signed_keys  _signed_keys 'isSignedRepoIndex'
-	arrayFilter $3  curent_repo_path index _signed_keys _signed_repo_path 'isSignedRepoIndex'
+	arrayFilter $3  current_repo_path index _signed_keys _signed_repo_path 'isSignedRepoIndex'
 }
 
 FilterLegacyAptArray(){
 	arrayFilter $1 	current_mirror index _signed_keys legacy_mirrors ' ! isSignedRepoIndex'
 	arrayFilter $2  current_key  index _signed_keys  legacy_keys '! isSignedRepoIndex'
-	arrayFilter $3  curent_repo_path index _signed_keys legacy_repo_path '! isSignedRepoIndex'
+	arrayFilter $3  current_repo_path index _signed_keys legacy_repo_path '! isSignedRepoIndex'
 
 }
 
