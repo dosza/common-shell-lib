@@ -997,63 +997,6 @@ ConfigureSourcesList(){
 	writeAptMirrors $2 $3
 }
 
-writeSignedMirrors(){
-	
-	if !( isVariableArray $1 && isVariableArray $2); then 
-		returnFalse
-	fi
-
-
-	newPtr ref_file_mirros=$2
-	
-	isArchRegex(){
-		if [[ "$text" =~  $arch_regex ]];then 
-			has_arch=0
-			arch_type="$text"
-			return 0;
-		fi
-			return 1
-	}
-
-	parseMirror(){
-		local mirror_array=( $( echo "$mirror"  | sed "s/\[//g;s/\]//g"))
-		arrayFilter mirror_array text  final_mirror ' ! isArchRegex '
-	}
-
-	setMirror(){
-		local url_mirror_str="${final_mirror[@]:1}"
-		if [ $has_arch = 0 ]; then
-			
-			local new_mirror="deb [$arch_type signed-by=$signed_key] $url_mirror_str"
-		else 
-			local new_mirror="deb [signed-by=$signed_key] $url_mirror_str"
-		fi
-		mirror="$new_mirror"
-
-	}
-
-	echo 'Writing signed Mirrors'
-
-	arrayMap $1 mirror index '{
-		local has_arch=1
-		local arch_regex="(arch=)"
-		local arch_type=""
-		local final_mirror=()
-		local file_mirror=${ref_file_mirros[$index]}
-		local signed_key="${final_keys[$index]}"
-		parseMirror
-		setMirror
-		local mirror_str=(
-			"### THIS FILE IS AUTOMATICALLY CONFIGURED"
-			"###ou may comment out this entry, but any other modifications may be lost." 
-			"$mirror" 
-		)
-		WriterFileln $file_mirror mirror_str
-	}'
-
-	unset parseMirror setMirror isArchRegex
-}
-
 getNewAptKeys(){
 	if [ $# -lt 1 ] || [ "$1" = "" ] ; then return 1; fi
 
@@ -1108,7 +1051,7 @@ configureSignedSourcesList(){
 	setSignedKeysList $2
 	CheckMinDeps
 	getNewAptKeys $1
-	writeSignedMirrors $2 $3
+	writeAptMirrors $2 $3
 }
 
 # Check if the minimum common-shell-lib dependencies are installed

@@ -233,8 +233,8 @@ testConfigureSignedSourcesList(){
     }
 
     local mirrors=(   
-        "[arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
-        "[signed-by=/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"
+        "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
+        "deb [signed-by=/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"
     )
 
     local keys=(
