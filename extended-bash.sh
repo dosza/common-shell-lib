@@ -1011,45 +1011,12 @@ SetSignedKeysIndex(){
 		fi
 	}'
 }
-isSignedRepoIndex(){
-	local repo_status=${signed_keys_index[$index]}
-	[ "$repo_status"  = "1"  ]
-}
-
-FilterNewSignatureAptArrays(){
-	arrayFilter $1 key index trusted_signed_keys 'isSignedRepoIndex'
-	
-	arrayFilter $2 mirror index trusted_signed_mirrors 'isSignedRepoIndex'
-
-	arrayFilter $3 apt_list_file index trusted_signed_repo_path 'isSignedRepoIndex'
-}
-
-FilterLegacyAptArray(){
-
-	arrayFilter $1 key index legacy_keys '! isSignedRepoIndex'
-	
-	arrayFilter $2 mirror index legacy_mirrors ' ! isSignedRepoIndex'
-
-	arrayFilter $3 apt_list_file index legacy_repo_path ' ! isSignedRepoIndex'
-
-}
-
 
 
 ConfigureSourcesList(){
 	
 	[ $# -lt 3 ] && returnFalse
 	
-	ConfigureSignedSourcesList(){
-		
-		[ $# -lt 3 ] && returnFalse
-
-		local target_apt_keys=()
-		setSignedKeysList $2
-		getNewAptKeys $1
-		writeAptMirrors $2 $3
-	}
-
 	local signed_keys_index=()
 	local trusted_signed_mirrors=()
 	local trusted_signed_keys=()
@@ -1057,7 +1024,48 @@ ConfigureSourcesList(){
 	local legacy_mirrors=()
 	local legacy_keys=()
 	local legacy_repo_path=()
+	local trusted_options_args=(
+		trusted_signed_keys 
+		trusted_signed_mirrors 
+		trusted_signed_repo_path
+	)
 	
+	function isLegacyAptRepository {
+		local repo_status=${signed_keys_index[$index]}
+		[ "$repo_status"  = "0"  ]
+	}
+
+	function isNotLegacyAptRepository {
+		isLegacyAptRepository && returnFalse
+	}
+
+	function ConfigureSignedSourcesList {
+		
+		[ $# -lt 3 ] && returnFalse
+		local target_apt_keys=()
+		setSignedKeysList $2
+		getNewAptKeys $1
+		writeAptMirrors $2 $3
+	}
+
+	function FilterNewSignatureAptArrays {
+		arrayFilter $1 key index trusted_signed_keys 'isNotLegacyAptRepository'
+		
+		arrayFilter $2 mirror index trusted_signed_mirrors 'isNotLegacyAptRepository'
+
+		arrayFilter $3 apt_list_file index trusted_signed_repo_path 'isNotLegacyAptRepository'
+	}	
+
+	function FilterLegacyAptArray {
+
+		arrayFilter $1 key index legacy_keys 'isLegacyAptRepository'
+	
+		arrayFilter $2 mirror index legacy_mirrors 'isLegacyAptRepository'
+
+		arrayFilter $3 apt_list_file index legacy_repo_path 'isLegacyAptRepository'
+
+	}
+
 	SetSignedKeysIndex $2
 	FilterNewSignatureAptArrays $1 $2 $3
 	FilterLegacyAptArray $1 $2 $3
@@ -1065,13 +1073,13 @@ ConfigureSourcesList(){
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
 	
-	ConfigureSignedSourcesList trusted_signed_keys trusted_signed_mirrors trusted_signed_repo_path
+	ConfigureSignedSourcesList ${trusted_options_args[*]}
 
-	# destroy 
-	unset ConfigureSignedSourcesList
+	unset isLegacyAptRepository
+	unset isNotLegacyAptRepository
+	unset FilterLegacyAptArray
+	unset FilterNewSignatureAptArrays
 
-
-	
 }
 
 getNewAptKeys(){
