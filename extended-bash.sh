@@ -971,10 +971,6 @@ ConfigureSourcesListByScript(){
 	
 }
 
-trimLegacyAptKey(){
-	legacy_trim_apt_key="$(basename "$key")"
-	legacy_trim_apt_key="$(echo "$legacy_trim_apt_key" |sed "s/.asc//g;s/.key//g;s/.pub//g").gpg"
-}
 
 # Add APT repository keys via a URL array
 # $1 is a reference to the Apt Keys array
@@ -982,6 +978,12 @@ getAptKeys(){
 	if [ $# -lt 1 ] || [ "$1" = "" ] ; then return 1; fi
 
 	! isVariableArray $1 && returnFalse
+	
+	function trimLegacyAptKey {
+		legacy_trim_apt_key="$(basename "$key")"
+		legacy_trim_apt_key="$(echo "$legacy_trim_apt_key" |sed "s/.asc//g;s/.key//g;s/.pub//g").gpg"
+	}
+
 
 	echo "Getting apt Keys ..."
 
@@ -992,25 +994,14 @@ getAptKeys(){
 		gpg --dearmor |
 		tee /etc/apt/trusted.gpg.d/$legacy_trim_apt_key >/dev/null'
 	
+	unset trimLegacyAptKey
+	
 }
 # Configure 3th party sources, using array of apt_keys, paths and mirrors
 # $1 is reference to array of APT keys
 # $2 is reference to array to apt sources.list paths,
 # $3 is reference to array mirros, 
 
-
-
-SetSignedKeysIndex(){
-
-	local signed_regex='(signed\-by=)'
-	arrayMap $1 repo index   '{
-		if [[ "$repo" =~ $signed_regex ]]; then
-			signed_keys_index[$index]=1
-		else 
-			signed_keys_index[$index]=0
-		fi
-	}'
-}
 
 
 ConfigureSourcesList(){
@@ -1030,41 +1021,77 @@ ConfigureSourcesList(){
 		trusted_signed_mirrors 
 		trusted_signed_repo_path
 	"
-	
-	function isLegacyAptRepository {
-		local repo_status=${signed_keys_index[$index]}
-		[ "$repo_status"  = "0"  ]
-	}
 
-	function isNotLegacyAptRepository {
-		isLegacyAptRepository && returnFalse
-	}
+	#internal function section
+	{
+		function SetSignedKeysIndex {
 
-	function FilterNewSignatureAptArrays {
-		arrayFilter $1 key index trusted_signed_keys 'isNotLegacyAptRepository'
+			local signed_regex='(signed\-by=)'
+			arrayMap $1 repo index   '{
+				if [[ "$repo" =~ $signed_regex ]]; then
+					signed_keys_index[$index]=1
+				else 
+					signed_keys_index[$index]=0
+				fi
+			}'
+		}
+
+
+		function trimTargetKey {
+			local signed_regex='(signed\-by=)'
+			for param in ${key}; do
+				if [[ "$param" =~ $signed_regex ]]; then
+					trim_key="$(
+						echo "${param}" |sed 's/signed-by=//g;s/\[//g;s/\]//g')"
+					return
+				fi
+			done
+		}	
+
+		function setSignedKeysList {
+			local trim_key
+			arrayMap $1 key '{
+				trimTargetKey
+				target_apt_keys+=("$trim_key")
+			}'
+
+		}
+
+		function isLegacyAptRepository {
+			local repo_status=${signed_keys_index[$index]}
+			[ "$repo_status"  = "0"  ]
+		}
+
+		function isNotLegacyAptRepository {
+			isLegacyAptRepository && returnFalse
+		}
+
+		function FilterNewSignatureAptArrays {
+			arrayFilter $1 key index trusted_signed_keys 'isNotLegacyAptRepository'
+			
+			arrayFilter $2 mirror index trusted_signed_mirrors 'isNotLegacyAptRepository'
+
+			arrayFilter $3 apt_list_file index trusted_signed_repo_path 'isNotLegacyAptRepository'
+		}	
+
+		function FilterLegacyAptArray {
+
+			arrayFilter $1 key index legacy_keys 'isLegacyAptRepository'
 		
-		arrayFilter $2 mirror index trusted_signed_mirrors 'isNotLegacyAptRepository'
+			arrayFilter $2 mirror index legacy_mirrors 'isLegacyAptRepository'
 
-		arrayFilter $3 apt_list_file index trusted_signed_repo_path 'isNotLegacyAptRepository'
-	}	
+			arrayFilter $3 apt_list_file index legacy_repo_path 'isLegacyAptRepository'
 
-	function FilterLegacyAptArray {
+		}
 
-		arrayFilter $1 key index legacy_keys 'isLegacyAptRepository'
-	
-		arrayFilter $2 mirror index legacy_mirrors 'isLegacyAptRepository'
-
-		arrayFilter $3 apt_list_file index legacy_repo_path 'isLegacyAptRepository'
-
-	}
-
-	function ConfigureSignedSourcesList {
-		
-		[ $# -lt 3 ] && returnFalse
-		local target_apt_keys=()
-		setSignedKeysList $2
-		getNewAptKeys $1
-		writeAptMirrors $2 $3
+		function ConfigureSignedSourcesList {
+			
+			[ $# -lt 3 ] && returnFalse
+			local target_apt_keys=()
+			setSignedKeysList $2
+			getNewAptKeys $1
+			writeAptMirrors $2 $3
+		}
 	}
 
 	SetSignedKeysIndex $2
@@ -1075,12 +1102,19 @@ ConfigureSourcesList(){
 	writeAptMirrors legacy_mirrors legacy_repo_path
 	
 	ConfigureSignedSourcesList $trusted_options_args
-
-	unset isLegacyAptRepository
-	unset isNotLegacyAptRepository
-	unset FilterLegacyAptArray
-	unset FilterNewSignatureAptArrays
-	unset ConfigureSignedSourcesList
+	
+	# unset internal functions in block
+	{
+		unset isLegacyAptRepository
+		unset isNotLegacyAptRepository
+		unset FilterLegacyAptArray
+		unset FilterNewSignatureAptArrays
+		unset ConfigureSignedSourcesList
+		unset SetSignedKeysIndex
+		unset trimLegacyAptKey
+		unset trimTargetKey
+		unset setSignedKeysList
+	}
 
 }
 
@@ -1100,25 +1134,6 @@ getNewAptKeys(){
 }
 
 
-trimTargetKey(){
-	local signed_regex='(signed\-by=)'
-	for param in ${key}; do
-		if [[ "$param" =~ $signed_regex ]]; then
-			trim_key="$(
-				echo "${param}" |sed 's/signed-by=//g;s/\[//g;s/\]//g')"
-			return
-		fi
-	done
-}	
-
-setSignedKeysList(){
-	local trim_key
-	arrayMap $1 key '{
-		trimTargetKey
-		target_apt_keys+=("$trim_key")
-	}'
-
-}
 
 
 # Check if the minimum common-shell-lib dependencies are installed
