@@ -973,7 +973,7 @@ ConfigureSourcesListByScript(){
 
 trimLegacyAptKey(){
 	legacy_trim_apt_key="$(basename "$key")"
-	legacy_trim_apt_key="$(echo "$legacy_trim_apt_key" |sed "s/.asc/.gpg/g;s/.key/.gpg/g")"
+	legacy_trim_apt_key="$(echo "$legacy_trim_apt_key" |sed "s/.asc//g;s/.key//g;s/.pub//g").gpg"
 }
 
 # Add APT repository keys via a URL array
@@ -988,7 +988,9 @@ getAptKeys(){
 	arrayMap $1 key '
 		local legacy_trim_apt_key
 		trimLegacyAptKey
-		Wget -qO- "$key" | gpg --dearmor | tee /etc/apt/trusted.gpg.d/$legacy_trim_apt_key'
+		Wget -qO- "$key" |
+		gpg --dearmor |
+		tee /etc/apt/trusted.gpg.d/$legacy_trim_apt_key >/dev/null'
 	
 }
 # Configure 3th party sources, using array of apt_keys, paths and mirrors
