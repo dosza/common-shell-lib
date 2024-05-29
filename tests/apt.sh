@@ -130,6 +130,12 @@ testWriteAptMirrors(){
 
 testConfigureSourcesList(){
     mkdir -p "$FAKE_ROOT_TEST_DIR/apt/sources.list.d"
+    
+    install(){ :; }
+    gpg(){ :; }
+    tee(){ :; }
+    Wget(){ :; }
+
 
     local repositorys=(
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/google-chrome.list"
@@ -158,7 +164,7 @@ testConfigureSourcesList(){
     ConfigureSourcesList
     assertFalse "[Configuring Apt legacy mirror, but missing args]" $?
 
-    install(){ :; }
+
 
     mirrors+=(
         "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"

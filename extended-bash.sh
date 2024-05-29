@@ -1005,22 +1005,31 @@ SetSignedKeysIndex(){
 	arrayMap $1 repo index   '{
 		if [[ "$repo" =~ $signed_regex ]]; then
 			signed_keys_index[$index]=1
+		else 
+			signed_keys_index[$index]=0
 		fi
 	}'
 }
 isSignedRepoIndex(){
-	[ ${signed_keys_index[$index]} = 1 ]
+	local repo_status=${signed_keys_index[$index]}
+	[ "$repo_status"  = "1"  ]
 }
+
 FilterNewSignatureAptArrays(){
-	arrayFilter $1 	current_mirror index _signed_keys _signed_mirrors 'isSignedRepoIndex'
-	arrayFilter $2  current_key  index _signed_keys  _signed_keys 'isSignedRepoIndex'
-	arrayFilter $3  current_repo_path index _signed_keys _signed_repo_path 'isSignedRepoIndex'
+	arrayFilter $1 key index trusted_signed_keys 'isSignedRepoIndex'
+	
+	arrayFilter $2 mirror index trusted_signed_mirrors 'isSignedRepoIndex'
+
+	arrayFilter $3 apt_list_file index trusted_signed_repo_path 'isSignedRepoIndex'
 }
 
 FilterLegacyAptArray(){
-	arrayFilter $1 	current_mirror index _signed_keys legacy_mirrors ' ! isSignedRepoIndex'
-	arrayFilter $2  current_key  index _signed_keys  legacy_keys '! isSignedRepoIndex'
-	arrayFilter $3  current_repo_path index _signed_keys legacy_repo_path '! isSignedRepoIndex'
+
+	arrayFilter $1 key index legacy_keys '! isSignedRepoIndex'
+	
+	arrayFilter $2 mirror index legacy_mirrors ' ! isSignedRepoIndex'
+
+	arrayFilter $3 apt_list_file index legacy_repo_path ' ! isSignedRepoIndex'
 
 }
 
@@ -1028,23 +1037,30 @@ ConfigureSourcesList(){
 	[ $# -lt 3 ] && returnFalse
 	
 	local signed_keys_index=()
-	local _signed_mirrors=()
-	local _signed_keys=()
-	local _signed_repo_path=()
+	local trusted_signed_mirrors=()
+	local trusted_signed_keys=()
+	local trusted_signed_repo_path=()
 	local legacy_mirrors=()
 	local legacy_keys=()
 	local legacy_repo_path=()
 	local target_apt_keys=()
 	
-	SetSignedKeysIndex
+	SetSignedKeysIndex $2
 	FilterNewSignatureAptArrays $1 $2 $3
 	FilterLegacyAptArray $1 $2 $3
+	
 	CheckMinDeps
-	setSignedKeysList _signed_mirrors
+	
+	
 	getAptKeys legacy_keys
-	getNewAptKeys _signed_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
-	writeAptMirrors _signed_mirrors _signed_repo_path
+	
+	setSignedKeysList  trusted_signed_mirrors
+	getNewAptKeys trusted_signed_keys
+	writeAptMirrors trusted_signed_mirrors trusted_signed_repo_path
+
+
+	
 }
 
 getNewAptKeys(){
