@@ -135,6 +135,7 @@ testConfigureSourcesList(){
     gpg(){ :; }
     tee(){ :; }
     Wget(){ :; }
+    wget(){ :; }
 
 
     local repositorys=(

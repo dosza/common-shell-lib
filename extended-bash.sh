@@ -1072,6 +1072,7 @@ ConfigureSourcesList(){
 
 		function isNotLegacyAptRepository {
 			isLegacyAptRepository && returnFalse
+			return 0
 		}
 
 		function FilterNewSignatureAptArrays {
