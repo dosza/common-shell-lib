@@ -1025,11 +1025,11 @@ ConfigureSourcesList(){
 	local legacy_keys=()
 	local legacy_repo_path=()
 	
-	local trusted_options_args=(
+	local trusted_options_args="
 		trusted_signed_keys 
 		trusted_signed_mirrors 
 		trusted_signed_repo_path
-	)
+	"
 	
 	function isLegacyAptRepository {
 		local repo_status=${signed_keys_index[$index]}
@@ -1074,7 +1074,7 @@ ConfigureSourcesList(){
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
 	
-	ConfigureSignedSourcesList ${trusted_options_args[*]}
+	ConfigureSignedSourcesList $trusted_options_args
 
 	unset isLegacyAptRepository
 	unset isNotLegacyAptRepository
