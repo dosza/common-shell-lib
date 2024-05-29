@@ -1068,8 +1068,8 @@ ConfigureSourcesList(){
 	}
 
 	SetSignedKeysIndex $2
-	FilterNewSignatureAptArrays $1 $2 $3
 	FilterLegacyAptArray $1 $2 $3
+	FilterNewSignatureAptArrays $1 $2 $3
 	CheckMinDeps
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
@@ -1080,6 +1080,7 @@ ConfigureSourcesList(){
 	unset isNotLegacyAptRepository
 	unset FilterLegacyAptArray
 	unset FilterNewSignatureAptArrays
+	unset ConfigureSignedSourcesList
 
 }
 
