@@ -104,7 +104,7 @@ testGetAptKeys(){
 testWriteAptMirrors(){
     mkdir -p "$FAKE_ROOT_TEST_DIR/apt/sources.list.d"
 
-    local repositorys=(
+    local repositories=(
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/google-chrome.list"
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/sublime-text.list"
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/geogebra.list"
@@ -124,7 +124,7 @@ testWriteAptMirrors(){
     writeAptMirrors mirrors
     assertFalse "[Try writeAptMirrors with few args]" $?
     
-    writeAptMirrors mirrors repositorys
+    writeAptMirrors mirrors repositories
     assertTrue '[Try writeAptMirrors with success' $?
 }
 
@@ -132,47 +132,42 @@ testConfigureSourcesList(){
     mkdir -p "$FAKE_ROOT_TEST_DIR/apt/sources.list.d"
     
     install(){ :; }
-    gpg(){ :; }
     tee(){ :; }
-    Wget(){ :; }
-    wget(){ :; }
+    gpg(){ echo $@; }
 
-
-    local repositorys=(
+    local repositories=(
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/google-chrome.list"
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/sublime-text.list"
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/geogebra.list"
         "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/virtualbox.list"
-        "$FAKE_ROOT_TEST_DIR/apt/sources.list.d/teams.list'")
+        )
 
     local mirrors=(
         'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' 
         'deb https://download.sublimetext.com/ apt/stable/' 
         'deb http://www.geogebra.net/linux/ stable main'
         "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian ${dist_version} contrib"    
-        "deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main")
+    )
 
     local apt_key_url_repository=(
         "https://dl-ssl.google.com/linux/linux_signing_key.pub"
         "https://static.geogebra.org/linux/office@geogebra.org.gpg.key"
         "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
         "https://www.virtualbox.org/download/oracle_vbox.asc"
-        "https://packages.microsoft.com/keys/microsoft.asc")
+    )
 
-    ConfigureSourcesList apt_key_url_repository mirrors repositorys
+    echo ${GREEN}Configurando somente Apt Legado${DEFAULT}
+    ConfigureSourcesList apt_key_url_repository mirrors repositories
     assertTrue "[Configuring Apt legacy mirror with success]" $?
-
     ConfigureSourcesList
     assertFalse "[Configuring Apt legacy mirror, but missing args]" $?
-
-
 
     mirrors+=(
         "deb [arch=amd64 signed-by=$FAKE_ROOT_TEST_DIR/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
         "deb [signed-by=$FAKE_ROOT_TEST_DIR/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"
     )
     
-    repositorys+=(
+    repositories+=(
         $FAKE_ROOT_TEST_DIR/apt/sources.list.d/vscode.list
         $FAKE_ROOT_TEST_DIR/apt/sources.list.d/megasync.list
     )
@@ -182,8 +177,12 @@ testConfigureSourcesList(){
         'https://mega.nz/linux/repo/xUbuntu_22.04/Release.key'
     )
 
-    ConfigureSourcesList apt_key_url_repository mirrors repositorys
-    assertTrue "[Configuring New Apt mirror with success]" $?
+    echo ${GREEN}Configurando Legado + Novo Apt${DEFAULT}
+    ConfigureSourcesList apt_key_url_repository mirrors repositories
+
+    local existent_repositories=()
+    arrayFilter repositories repository existent_repositories '[ -e "$repository" ]'
+    assertEquals "[Configuring New Apt mirror with success]" "${#repositories[@]}" "${#existent_repositories[@]}"
 
     ConfigureSourcesList
     assertFalse "[Configuring New APTmirror, but missing args]" $?
@@ -203,7 +202,7 @@ testConfigureSourcesList(){
         $FAKE_ROOT_TEST_DIR/apt/sources.list.d/megasync.list
     )
 
-    ConfigureSourcesList apt_key_url_repository mirrors repositorys
+    ConfigureSourcesList apt_key_url_repository mirrors repositories
     assertTrue "[Configuring  only New Apt mirror with success]" $?
 
     ConfigureSourcesList

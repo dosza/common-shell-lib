@@ -945,8 +945,6 @@ writeAptMirrors(){
 
 
 	newPtr ref_file_mirros=$2
-
-	echo "Writing mirrors ..."
 	
 	arrayMap $1 mirror index '{
 		local file_mirror=${ref_file_mirros[$index]}
@@ -955,6 +953,7 @@ writeAptMirrors(){
 			"###ou may comment out this entry, but any other modifications may be lost." 
 			"$mirror" 
 		)
+		echo saving $file_mirror
 		WriterFileln $file_mirror mirror_str
 	}'
 }
@@ -993,7 +992,7 @@ getAptKeys(){
 	}
 
 
-	echo "Getting apt Keys ..."
+	echo "Getting legacy Keys ..."
 
 	arrayMap $1 key '
 		local legacy_trim_apt_key
@@ -1023,12 +1022,6 @@ ConfigureSourcesList(){
 	local legacy_mirrors=()
 	local legacy_keys=()
 	local legacy_repo_path=()
-	
-	local trusted_options_args="
-		trusted_signed_keys 
-		trusted_signed_mirrors 
-		trusted_signed_repo_path
-	"
 
 	#internal function section
 	{
@@ -1071,9 +1064,10 @@ ConfigureSourcesList(){
 		}
 
 		function isNotLegacyAptRepository {
-			isLegacyAptRepository && returnFalse
-			return 0
+			local repo_status=${signed_keys_index[$index]}
+			[ "$repo_status"  = "1"  ]
 		}
+
 
 		function FilterNewSignatureAptArrays {
 			arrayFilter $1 key index trusted_signed_keys 'isNotLegacyAptRepository'
@@ -1090,6 +1084,7 @@ ConfigureSourcesList(){
 			arrayFilter $2 mirror index legacy_mirrors 'isLegacyAptRepository'
 
 			arrayFilter $3 apt_list_file index legacy_repo_path 'isLegacyAptRepository'
+
 
 		}
 
@@ -1110,7 +1105,8 @@ ConfigureSourcesList(){
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
 	
-	ConfigureSignedSourcesList $trusted_options_args
+
+	ConfigureSignedSourcesList trusted_signed_keys trusted_signed_mirrors trusted_signed_repo_path
 	
 	# unset internal functions in block
 	{
@@ -1132,14 +1128,24 @@ getNewAptKeys(){
 
 	! isVariableArray $1 && returnFalse
 	
-	arrayMap $1 key index '{
-		local final_key=${target_apt_keys[$index]}
-		local new_key="$(basename $final_key)"
-		wget -qO- "$key" | gpg --dearmor > $new_key
-		install -D -o root -g root -m 644 $new_key $final_key
-		rm $new_key
-	}'
+	function isCurrentTargetKeyEmpty {
+		[ "${target_apt_keys[$index]}" = "" ]
+	}
+	function getCurrentKey {
+		
+		isCurrentTargetKeyEmpty && returnFalse
 
+		local target_key=${target_apt_keys[$index]}
+		local new_key="$(basename $target_key)"
+		Wget -qO- "$key" | gpg --dearmor > $new_key
+		install -D -o root -g root -m 644 $new_key $target_key
+		rm $new_key
+	}
+
+	arrayMap $1 key index 'getCurrentKey'
+
+	unset getCurrentKey
+	unset isCurrentTargetKeyEmpty
 }
 
 # Check if the minimum common-shell-lib dependencies are installed
