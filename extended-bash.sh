@@ -1034,9 +1034,22 @@ FilterLegacyAptArray(){
 
 }
 
+
+
 ConfigureSourcesList(){
+	
 	[ $# -lt 3 ] && returnFalse
 	
+	ConfigureSignedSourcesList(){
+		
+		[ $# -lt 3 ] && returnFalse
+
+		local target_apt_keys=()
+		setSignedKeysList $2
+		getNewAptKeys $1
+		writeAptMirrors $2 $3
+	}
+
 	local signed_keys_index=()
 	local trusted_signed_mirrors=()
 	local trusted_signed_keys=()
@@ -1044,21 +1057,18 @@ ConfigureSourcesList(){
 	local legacy_mirrors=()
 	local legacy_keys=()
 	local legacy_repo_path=()
-	local target_apt_keys=()
 	
 	SetSignedKeysIndex $2
 	FilterNewSignatureAptArrays $1 $2 $3
 	FilterLegacyAptArray $1 $2 $3
-	
 	CheckMinDeps
-	
-	
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
 	
-	setSignedKeysList  trusted_signed_mirrors
-	getNewAptKeys trusted_signed_keys
-	writeAptMirrors trusted_signed_mirrors trusted_signed_repo_path
+	ConfigureSignedSourcesList trusted_signed_keys trusted_signed_mirrors trusted_signed_repo_path
+
+	# destroy 
+	unset ConfigureSignedSourcesList
 
 
 	
