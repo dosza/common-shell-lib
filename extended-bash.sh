@@ -980,8 +980,16 @@ getAptKeys(){
 	! isVariableArray $1 && returnFalse
 	
 	function trimLegacyAptKey {
+		
 		legacy_trim_apt_key="$(basename "$key")"
-		legacy_trim_apt_key="$(echo "$legacy_trim_apt_key" |sed "s/.asc//g;s/.key//g;s/.pub//g").gpg"
+		
+		legacy_trim_apt_key="$(
+			echo "$legacy_trim_apt_key" |
+			sed "s/.asc//g;s/.key//g;s/.pub//g;s/.gpg//g"
+		)"
+
+		legacy_trim_apt_key+=".gpg"
+
 	}
 
 
@@ -1132,9 +1140,6 @@ getNewAptKeys(){
 	}'
 
 }
-
-
-
 
 # Check if the minimum common-shell-lib dependencies are installed
 # If not, they are installed
