@@ -1024,6 +1024,7 @@ ConfigureSourcesList(){
 	local legacy_mirrors=()
 	local legacy_keys=()
 	local legacy_repo_path=()
+	
 	local trusted_options_args=(
 		trusted_signed_keys 
 		trusted_signed_mirrors 
