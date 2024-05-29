@@ -1040,15 +1040,6 @@ ConfigureSourcesList(){
 		isLegacyAptRepository && returnFalse
 	}
 
-	function ConfigureSignedSourcesList {
-		
-		[ $# -lt 3 ] && returnFalse
-		local target_apt_keys=()
-		setSignedKeysList $2
-		getNewAptKeys $1
-		writeAptMirrors $2 $3
-	}
-
 	function FilterNewSignatureAptArrays {
 		arrayFilter $1 key index trusted_signed_keys 'isNotLegacyAptRepository'
 		
@@ -1065,6 +1056,15 @@ ConfigureSourcesList(){
 
 		arrayFilter $3 apt_list_file index legacy_repo_path 'isLegacyAptRepository'
 
+	}
+
+	function ConfigureSignedSourcesList {
+		
+		[ $# -lt 3 ] && returnFalse
+		local target_apt_keys=()
+		setSignedKeysList $2
+		getNewAptKeys $1
+		writeAptMirrors $2 $3
 	}
 
 	SetSignedKeysIndex $2
