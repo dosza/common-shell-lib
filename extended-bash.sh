@@ -157,7 +157,7 @@ forEach(){
     if [ $# -lt 3 ] || [ 4 -lt $# ]; then
         return
     fi
-    if ! isVariableArray $1; then
+    if ! isVariableArray $1 || isArrayEmpty $1; then
     	return $BASH_FALSE
     fi
     newPtr refArrayToforEach=$1
