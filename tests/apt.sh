@@ -151,8 +151,8 @@ testConfigureSourcesList(){
 
     local apt_key_url_repository=(
         "https://dl-ssl.google.com/linux/linux_signing_key.pub"
-        "https://static.geogebra.org/linux/office@geogebra.org.gpg.key"
         "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
+        "https://static.geogebra.org/linux/office@geogebra.org.gpg.key"
         "https://www.virtualbox.org/download/oracle_vbox.asc"
     )
 
@@ -187,12 +187,13 @@ testConfigureSourcesList(){
     ConfigureSourcesList
     assertFalse "[Configuring New APTmirror, but missing args]" $?
 
+
     local mirrors=(   
         "deb [arch=amd64 signed-by=$FAKE_ROOT_TEST_DIR/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
         "deb [signed-by=$FAKE_ROOT_TEST_DIR/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"
     )
 
-    local keys=(
+    local apt_key_url_repository=(
         'https://packages.microsoft.com/keys/microsoft.asc'
         'https://mega.nz/linux/repo/xUbuntu_22.04/Release.key'
     )
@@ -202,6 +203,7 @@ testConfigureSourcesList(){
         $FAKE_ROOT_TEST_DIR/apt/sources.list.d/megasync.list
     )
 
+    echo ${GREEN}Configurando somente novo apt ${DEFAULT}
     ConfigureSourcesList apt_key_url_repository mirrors repositories
     assertTrue "[Configuring  only New Apt mirror with success]" $?
 
