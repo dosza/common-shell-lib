@@ -1064,8 +1064,7 @@ ConfigureSourcesList(){
 		}
 
 		function isNotLegacyAptRepository {
-			local repo_status=${signed_keys_index[$index]}
-			[ "$repo_status"  = "1"  ]
+			! isLegacyAptRepository 
 		}
 
 
