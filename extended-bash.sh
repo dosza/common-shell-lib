@@ -1146,6 +1146,7 @@ getNewAptKeys(){
 		rm $new_key
 	}
 
+	echo "Getting new apt keys ..."
 	arrayMap $1 key index 'getCurrentKey'
 
 	unset getCurrentKey
