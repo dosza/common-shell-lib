@@ -1097,13 +1097,14 @@ ConfigureSourcesList(){
 		}
 	}
 
+
+
 	SetSignedKeysIndex $2
 	FilterLegacyAptArray $1 $2 $3
 	FilterNewSignatureAptArrays $1 $2 $3
 	CheckMinDeps
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
-	
 
 	ConfigureSignedSourcesList trusted_signed_keys trusted_signed_mirrors trusted_signed_repo_path
 	
@@ -1130,6 +1131,7 @@ getNewAptKeys(){
 	function isCurrentTargetKeyEmpty {
 		[ "${target_apt_keys[$index]}" = "" ]
 	}
+	
 	function getCurrentKey {
 		
 		isCurrentTargetKeyEmpty && returnFalse
