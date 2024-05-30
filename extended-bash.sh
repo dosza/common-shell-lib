@@ -1135,14 +1135,9 @@ getNewAptKeys(){
 	if [ $# -lt 1 ] || [ "$1" = "" ] ; then return 1; fi
 
 	! isVariableArray $1 && returnFalse
-	
-	function isCurrentTargetKeyEmpty {
-		[ "${target_apt_keys[$index]}" = "" ]
-	}
+
 	
 	function getCurrentKey {
-		
-		isCurrentTargetKeyEmpty && returnFalse
 
 		local target_key=${target_apt_keys[$index]}
 		local new_key="$(basename $target_key)"
