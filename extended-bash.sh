@@ -1095,6 +1095,28 @@ ConfigureSourcesList(){
 
 		}
 
+		function getNewAptKeys {
+			if [ $# -lt 1 ] || [ "$1" = "" ] ; then return 1; fi
+
+			( ! isVariableArray $1 || isArrayEmpty target_apt_keys )&& returnFalse
+
+			
+			function getCurrentKey {
+
+				local target_key=${target_apt_keys[$index]}
+				local new_key="$(basename $target_key)"
+				Wget -qO- "$key" | gpg --dearmor > $new_key
+				install -D -o root -g root -m 644 $new_key $target_key
+				rm $new_key
+			}
+
+			echo "Getting new apt keys ..."
+			arrayMap $1 key index 'getCurrentKey'
+
+			unset getCurrentKey
+			unset isCurrentTargetKeyEmpty
+		}
+
 		function ConfigureSignedSourcesList {
 			
 			[ $# -lt 3 ] && returnFalse
@@ -1127,31 +1149,12 @@ ConfigureSourcesList(){
 		unset trimLegacyAptKey
 		unset trimTargetKey
 		unset setSignedKeysList
+		unset getNewAptKeys
 	}
 
 }
 
-getNewAptKeys(){
-	if [ $# -lt 1 ] || [ "$1" = "" ] ; then return 1; fi
 
-	! isVariableArray $1 && returnFalse
-
-	
-	function getCurrentKey {
-
-		local target_key=${target_apt_keys[$index]}
-		local new_key="$(basename $target_key)"
-		Wget -qO- "$key" | gpg --dearmor > $new_key
-		install -D -o root -g root -m 644 $new_key $target_key
-		rm $new_key
-	}
-
-	echo "Getting new apt keys ..."
-	arrayMap $1 key index 'getCurrentKey'
-
-	unset getCurrentKey
-	unset isCurrentTargetKeyEmpty
-}
 
 # Check if the minimum common-shell-lib dependencies are installed
 # If not, they are installed
