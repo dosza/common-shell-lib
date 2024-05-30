@@ -247,11 +247,19 @@ arrayToString(){
 #using form2:
 # arrayMap names name index 'echo ${names[index]}'
 
+isArrayEmpty(){
+	! isVariableArray $1 && return 0
+	newPtr ref_possible_empty_array=$1
+	if [ ${#ref_possible_empty_array[@]} = 0 ] ; then 
+		return 0
+	fi
+	return 1;
+}
 arrayMap(){
 
 	if [ $# -lt 3 ] || [ 4 -lt $# ] ; then return ; fi 
 	
-	! isVariableArray $1 && returnFalse
+	( !  isVariableArray $1  ||  isArrayEmpty $1 ) && returnFalse 
 	newPtr refMap=$1
 
 	case $# in
@@ -302,7 +310,7 @@ arrayFilter(){
 
 	case $# in 
 		4)
-			if ! ( isVariableArray $1 && isVariableArray $3 ); then 
+			if ! ( isVariableArray $1 && isVariableArray $3 && ! isArrayEmpty $1); then 
 				returnFalse; 
 			fi
 			newPtr refArray=$1			
