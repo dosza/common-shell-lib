@@ -1051,9 +1051,9 @@ ConfigureSourcesList(){
 
 		function setSignedKeysList {
 			local trim_key
-			arrayMap $1 key '{
+			arrayMap $1 key index '{
 				trimTargetKey
-				target_apt_keys+=("$trim_key")
+				target_apt_keys[$index]="$trim_key"
 			}'
 
 		}
