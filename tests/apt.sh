@@ -187,7 +187,6 @@ testConfigureSourcesList(){
     ConfigureSourcesList
     assertFalse "[Configuring New APTmirror, but missing args]" $?
 
-
     local mirrors=(   
         "deb [arch=amd64 signed-by=$FAKE_ROOT_TEST_DIR/etc/apt/keyrings/packages.microsoft.gpg]  https://packages.microsoft.com/repos/code stable main"
         "deb [signed-by=$FAKE_ROOT_TEST_DIR/usr/share/keyrings/meganz-archive-keyring.gpg] https://mega.nz/linux/repo/xUbuntu_22.04/ ./"

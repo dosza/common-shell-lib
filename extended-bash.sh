@@ -1045,7 +1045,6 @@ ConfigureSourcesList(){
 			}'
 		}
 
-
 		function trimTargetKey {
 			local signed_regex='(signed\-by=)'
 			for param in ${key}; do
@@ -1063,7 +1062,6 @@ ConfigureSourcesList(){
 				trimTargetKey
 				target_apt_keys[$index]="$trim_key"
 			}'
-
 		}
 
 		function isLegacyAptRepository {
@@ -1074,7 +1072,6 @@ ConfigureSourcesList(){
 		function isNotLegacyAptRepository {
 			! isLegacyAptRepository 
 		}
-
 
 		function FilterNewSignatureAptArrays {
 			arrayFilter $1 key index trusted_signed_keys 'isNotLegacyAptRepository'
@@ -1091,7 +1088,6 @@ ConfigureSourcesList(){
 			arrayFilter $2 mirror index legacy_mirrors 'isLegacyAptRepository'
 
 			arrayFilter $3 apt_list_file index legacy_repo_path 'isLegacyAptRepository'
-
 
 		}
 
@@ -1127,15 +1123,12 @@ ConfigureSourcesList(){
 		}
 	}
 
-
-
 	SetSignedKeysIndex $2
 	FilterLegacyAptArray $1 $2 $3
 	FilterNewSignatureAptArrays $1 $2 $3
 	CheckMinDeps
 	getAptKeys legacy_keys
 	writeAptMirrors legacy_mirrors legacy_repo_path
-
 	ConfigureSignedSourcesList trusted_signed_keys trusted_signed_mirrors trusted_signed_repo_path
 	
 	# unset internal functions in block
