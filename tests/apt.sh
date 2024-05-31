@@ -209,6 +209,10 @@ testConfigureSourcesList(){
 
     ConfigureSourcesList
     assertFalse "[Configuring only New APTmirror, but missing args]" $?
+
+    mirrors=()
+    ConfigureSourcesList apt_key_url_repository mirrors repositories
+    assertFalse '[Passing an empty array]' $?
 }
 
 testConfigureSourcesListByScript(){

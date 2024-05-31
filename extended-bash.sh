@@ -1021,7 +1021,7 @@ getAptKeys(){
 
 ConfigureSourcesList(){
 	
-	[ $# -lt 3 ] && returnFalse
+	([ $# -lt 3 ] || isArrayEmpty $1 || isArrayEmpty $2 || isArrayEmpty $3) && returnFalse
 	
 	local signed_keys_index=()
 	local trusted_signed_mirrors=()
