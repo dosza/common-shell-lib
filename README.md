@@ -1,6 +1,6 @@
 # Extended Bash Library
 <p align="center">
-	  <a href="https://github.com/dosza/ext-bash/archive/master.zip"><img src="https://img.shields.io/badge/Release-v0.3.2-green"/> </a><img src="https://img.shields.io/badge/language-shell-blue"/> <a href="https://github.com/dosza/ext-bash/LICENSE.md"><img src="https://img.shields.io/github/license/dosza/ext-bash"/></a>
+	  <a href="https://github.com/dosza/ext-bash/archive/master.zip"><img src="https://img.shields.io/badge/Release-v0.3.3-green"/> </a><img src="https://img.shields.io/badge/language-shell-blue"/> <a href="https://github.com/dosza/ext-bash/LICENSE.md"><img src="https://img.shields.io/github/license/dosza/ext-bash"/></a>
 </p>
 
 What is?
@@ -90,16 +90,22 @@ In array functions the command must be enclosed in single quotes:
 +	```initArrayAsCommand(array, '{commands'})``` //init an array as output of '{ commands }'
 
 
-
 New: APT functions
 ---
 This family call APT functions with -y and check erros param
 +	``` AptInstall(args...)``` #install packages without need confirm action
 +	``` getCurrentDebianFrontend()``` # set (if is possible) DEBIAN_FRONTEND=
 +	``` getAptKeys(array_key_ref)``` # import apt keys to Apt from array of Urls: note
+	+	Solve ```apt-key``` deprecatation
+
 +	``` getDebPackVersion``` # returns a version of package  (.deb) installed
 +	``` ConfigureSourcesListByScript(scripts_url)``` configure sources from array of url scripts (apt)
-+	``` ConfigureSourcesList(repository, mirrors,apt_keys)```, configure sources
++	``` ConfigureSourcesList(mirrors,apt_keys,repositories)```, configure sources
+	+	ConfigureSourcesList now supports new APT repository signature
+	sample:
+	```sources.list
+	deb [arch=amd64 signed-by=/usr/share/repo.gpg] https://deb.repo.com/debian main 
+	```
 
 
 ## Samples:
