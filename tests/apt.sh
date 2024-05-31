@@ -156,7 +156,6 @@ testConfigureSourcesList(){
         "https://www.virtualbox.org/download/oracle_vbox.asc"
     )
 
-    echo ${GREEN}Configurando somente Apt Legado${DEFAULT}
     ConfigureSourcesList apt_key_url_repository mirrors repositories
     assertTrue "[Configuring Apt legacy mirror with success]" $?
     ConfigureSourcesList
@@ -177,7 +176,6 @@ testConfigureSourcesList(){
         'https://mega.nz/linux/repo/xUbuntu_22.04/Release.key'
     )
 
-    echo ${GREEN}Configurando Legado + Novo Apt${DEFAULT}
     ConfigureSourcesList apt_key_url_repository mirrors repositories
 
     local existent_repositories=()
@@ -202,7 +200,6 @@ testConfigureSourcesList(){
         $FAKE_ROOT_TEST_DIR/apt/sources.list.d/megasync.list
     )
 
-    echo ${GREEN}Configurando somente novo apt ${DEFAULT}
     ConfigureSourcesList apt_key_url_repository mirrors repositories
     assertTrue "[Configuring  only New Apt mirror with success]" $?
 
