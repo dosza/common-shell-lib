@@ -1,12 +1,12 @@
 # Extended Bash Library
 
 <p align="center">
-	<img src="https://img.shields.io/badge/Release-v0.3.3-green">
-		<a href="https://github.com/dosza/ext-bash/archive/master.zip"/>
-	</img>
-	<img src="https://img.shields.io/badge/language-shell-blue">
-		<a href="https://github.com/dosza/ext-bash/LICENSE.md"/>
-	</img>
+	<a href="https://github.com/dosza/ext-bash/archive/master.zip">
+		<img src="https://img.shields.io/badge/Release-v0.3.3-green"/>
+	</a>
+	<a href="https://github.com/dosza/ext-bash/LICENSE.md"/>
+		<img src="https://img.shields.io/badge/language-shell-blue">
+	</a>
 	<img src="https://img.shields.io/github/license/dosza/ext-bash"/>
 </p>
 
